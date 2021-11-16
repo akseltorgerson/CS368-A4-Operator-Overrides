@@ -80,7 +80,7 @@ ostream& operator<<(ostream& out, Drink& d) {
     string style;
     out << d.name;
     out << " ";
-    out << d.base_price;
+    out << d.base_price << " ";
     switch (d.style) {
         case NEAT:
             out << "NEAT";
@@ -97,7 +97,9 @@ ostream& operator<<(ostream& out, Drink& d) {
         default:
             break;
     }
+    cout << "drink here" << endl;
     out << '\n';
+    cout << "drink here2" << endl;
     return out;
 }
 

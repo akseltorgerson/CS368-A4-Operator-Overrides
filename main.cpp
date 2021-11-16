@@ -1,15 +1,17 @@
 #include <iostream>
+#include <fstream>
 #include "Customer.h"
 #include "Drink.h"
 
 using namespace std;
 
-enum MAIN_MENU { ORDER=1, PAY=2, EXIT=3 };
-enum DRINK_MENU { WHOLE=1, TWO=2, HEAVY=3, MILKSHAKE=4, MALT=5, SKIM=6, RETURN=7 };
+enum MAIN_MENU { ORDER=1, PAY=2, SAVE=3, LOAD=4, EXIT=5 };
+// enum DRINK_MENU { WHOLE=1, TWO=2, HEAVY=3, MILKSHAKE=4, MALT=5, SKIM=6, RETURN=7 };
 
 void PrintMain();
 void PrintDrinks(Drink menu[], int count);
 void PrintStyles();
+void PromptName();
 
 int main() {
     int input = 0;
@@ -17,22 +19,40 @@ int main() {
     int style_choice = 0;
     float tip;
     string name;
+    int numMenuItems;
     Customer customer;
-    Drink menu[6];
-    menu[0] = Drink("Whole Milk", 2.50);
-    menu[1] = Drink("2% Milk", 2.00);
-    menu[2] = Drink("Heavy Cream", 3.50);
-    menu[3] = Drink("Milkshake", 5.00);
-    menu[4] = Drink("Malt", 6.00);
-    menu[5] = Drink("Skim Milk", 1.00);
     Drink next_drink;
+    fstream menuStream;
+    ofstream saveTabStream;
+    Drink* menu;
+
+    // open a file stream to main.txt
+    menuStream.open("menu.txt", std::fstream::in);
+    if (menuStream.fail()) {
+        cout << "Menu failed to open." << endl;
+    } else {
+        menuStream >> numMenuItems;
+        menu = new Drink[numMenuItems];
+        // populate the menu array
+        string drinkName;
+        float basePrice;
+        string drinkStyle;
+        for (int i = 0; i < numMenuItems; i++) {
+            menuStream >> drinkName;
+            menuStream >> basePrice;
+            menuStream >> drinkStyle;
+            menu[i] = Drink(drinkName, basePrice, NEAT);
+        }
+    }
+
+    PromptName();
+    cin >> name;
+    customer = Customer(name);
+    
     do {
-        PromptName();
-        cin >> name;
-        customer = Customer(name);
         PrintMain();
         cin >> input;
-        while (!cin || input < 1 || input > 3) {
+        while (!cin || input < 1 || input > 5) {
             if (!cin) { cin.clear(); cin.ignore(100, '\n'); }
             cout << "Please enter a valid menu item: ";
             cin >> input;
@@ -44,7 +64,7 @@ int main() {
                 cout << "You've reached your limit!" << endl;
             }
             else {
-                PrintDrinks(menu, 6);
+                PrintDrinks(menu, numMenuItems);
                 cin >> drink_choice;
                 while (!cin || drink_choice < 1 || drink_choice > 6) {
                     if (!cin) { cin.clear(); cin.ignore(100, '\n'); }
@@ -84,7 +104,23 @@ int main() {
                 cin >> tip;
             }
             customer.Print(tip); // divide tip by 100 to go from percent to proportion
-            customer = Customer(); // reset after paying tab.
+            PromptName();
+            cin >> name;
+            customer = Customer(name); // reset after paying tab.
+            break;
+        case SAVE:
+            // create a file called name.txt note: name is the customers name
+            std::ofstream{name + ".txt"};
+            saveTabStream.open(name);
+            if (saveTabStream.is_open()) {
+                cout << "here4" << endl;
+                saveTabStream << customer << endl;
+                cout << "here5" << endl;
+                saveTabStream.close();
+                cout << "here6" << endl;
+            }
+            break;
+        case LOAD:
             break;
         case EXIT:
             break;
@@ -95,21 +131,21 @@ int main() {
 }
 
 void PrintMain() {
+    cout << "Welcome to the Dairy Bar!" << endl;
     cout << "[" << ORDER << "] Order a Drink" << endl
          << "[" << PAY   << "] Pay Your Tab"  << endl
+         << "[" << SAVE  << "] Save Tab For Later" << endl
+         << "[" << LOAD  << "] Load Previous Tab" << endl
          << "[" << EXIT  << "] Exit"          << endl
          << "Please enter a menu item: ";
 }
 
 void PrintDrinks(Drink menu[], int count) {
-    cout << "[" << WHOLE     << "] Whole Milk"          << endl
-         << "[" << TWO       << "] 2% Milk"             << endl
-         << "[" << HEAVY     << "] Heavy Cream"         << endl
-         << "[" << MILKSHAKE << "] Milkshake"           << endl
-         << "[" << MALT      << "] Malt"                << endl
-         << "[" << SKIM      << "] Skim Milk"           << endl
-         << "[" << count+1   << "] Return to main menu" << endl
-         << "Please enter a menu item: ";
+    for (int i = 0; i < count; i++) {
+        cout << "[" << i+1 << "] " << menu[i].name << endl;
+    }
+    cout << "[" << count+1 << "] Return to main menu" << endl;
+    cout << "Please enter a menu item: ";
 }
 
 void PrintStyles() {
@@ -121,5 +157,5 @@ void PrintStyles() {
 }
 
 void PromptName() {
-    cout << "Please enter your name: " << endl;
+    cout << "Please enter your name: ";
 }

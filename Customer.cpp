@@ -58,6 +58,7 @@ ostream& operator<<(ostream& out, Customer& c) {
     out << c.drink_count;
     out << '\n';
     for (int i = 0; i < c.drink_count; i++) {
-        out << c.drinks[i] << endl;
+        out << c.drinks[i];
     }
+    return out;
 }
